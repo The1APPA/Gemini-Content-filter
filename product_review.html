@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Product Page with Review Moderation</title>
+  <style>
+    :root{
+      --bg:#f7f8fb;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --accent:#2563eb;
+      --success:#059669;
+      --danger:#dc2626;
+      font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:linear-gradient(180deg, var(--bg), #eef2ff 100%);
+      color:#111827;
+      padding:28px;
+      display:flex;
+      justify-content:center;
+      min-height:100vh;
+    }
+    .container{
+      width:100%;
+      max-width:980px;
+      display:grid;
+      grid-template-columns: 380px 1fr;
+      gap:28px;
+      align-items:start;
+    }
+    .product {
+      background:var(--card);
+      border-radius:12px;
+      padding:18px;
+      box-shadow: 0 6px 18px rgba(16,24,40,0.06);
+    }
+    .product img{
+      width:100%;
+      height:260px;
+      object-fit:cover;
+      border-radius:8px;
+      display:block;
+      margin-bottom:12px;
+      background:linear-gradient(135deg,#e9edf7,#f6f9ff);
+    }
+    .product h2{margin:0 0 6px 0; font-size:20px}
+    .price{color:var(--accent); font-weight:700; font-size:18px;}
+    .meta{font-size:13px;color:var(--muted);margin-top:8px;}
+    .panel{
+      background:var(--card);
+      border-radius:12px;
+      padding:18px;
+      box-shadow: 0 6px 18px rgba(16,24,40,0.06);
+      margin-bottom:18px;
+    }
+    .description p{color:var(--muted); margin-top:8px; line-height:1.5}
+    .review-form{display:grid; gap:10px; margin-top:12px;}
+    .row{display:flex; gap:10px}
+    input[type="text"], textarea, select{
+      width:100%; padding:10px 12px; border-radius:8px;
+      border:1px solid #e6e9ef; font-size:14px; outline:none;
+    }
+    textarea{min-height:100px; resize:vertical}
+    button{
+      background:var(--accent); color:white;
+      padding:10px 14px; border-radius:8px; border:0;
+      font-weight:600; cursor:pointer;
+    }
+    button.secondary{
+      background:transparent; color:var(--accent);
+      border:1px solid #dbeafe;
+    }
+    .note{font-size:13px;color:var(--muted)}
+    .reviews-list{display:flex; flex-direction:column; gap:12px; margin-top:12px}
+    .review{
+      border-radius:8px;
+      padding:12px;
+      background:linear-gradient(180deg,#fff,#fbfdff);
+      border:1px solid #eef2ff;
+    }
+    .review .meta-row{display:flex; justify-content:space-between; gap:10px; align-items:center}
+    .review .name{font-weight:700}
+    .stars{color:#b45309; font-weight:700}
+    .empty{color:var(--muted); text-align:center; padding:18px}
+    @media (max-width:880px){
+      .container{grid-template-columns:1fr; padding:0 12px}
+      .product img{height:220px}
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <section class="product">
+      <img src="https://via.placeholder.com/800x520?text=Product+Image" alt="Product image">
+      <h2 id="product-name">Nimbus Wireless Headphones</h2>
+      <div class="price" id="product-price">$129.00</div>
+      <div class="meta" id="product-short">Lightweight over-ear headphones · 30hr battery · Active noise cancellation</div>
+      <div style="margin-top:12px; display:flex; gap:10px;">
+        <button onclick="document.getElementById('review-name').focus()">Write a review</button>
+      </div>
+    </section>
+
+    <div>
+      <section class="panel description">
+        <h3>Product Description</h3>
+        <p>
+          The Nimbus Wireless Headphones combine crisp, balanced audio with excellent noise cancellation and a featherlight design.
+          Comfortable memory-foam earcups, quick-charge capabilities, and touch controls make them ideal for commuting, remote work, and long listening sessions.
+        </p>
+        <p class="note">Ships within 1–2 business days. Manufacturer warranty: 1 year.</p>
+      </section>
+
+      <section class="panel">
+        <h3>Customer Reviews</h3>
+
+        <form id="review-form" class="review-form" onsubmit="submitReview(event)" novalidate>
+          <div class="row">
+            <input id="review-name" type="text" placeholder="Your name (optional)">
+            <select id="review-rating" aria-label="Rating" title="Rating">
+              <option value="5">★★★★★ 5 — Excellent</option>
+              <option value="4">★★★★ 4 — Very good</option>
+              <option value="3">★★★ 3 — Okay</option>
+              <option value="2">★★ 2 — Not great</option>
+              <option value="1">★ 1 — Poor</option>
+            </select>
+          </div>
+          <textarea id="review-text" placeholder="Write your review here..." required></textarea>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <button type="submit">Post review</button>
+            <div id="form-msg" class="note" style="margin-left:auto"></div>
+          </div>
+        </form>
+
+        <div id="reviews" class="reviews-list">
+          <div class="empty">No reviews yet — be the first to post one!</div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+  const reviewsEl = document.getElementById('reviews');
+  const formMsg = document.getElementById('form-msg');
+
+  async function submitReview(e) {
+    e.preventDefault();
+    formMsg.textContent = '';
+
+    const name = document.getElementById('review-name').value.trim();
+    const rating = parseInt(document.getElementById('review-rating').value, 10);
+    const text = document.getElementById('review-text').value.trim();
+
+    if (!text) {
+      formMsg.style.color = 'var(--danger)';
+      formMsg.textContent = 'Please write a review before posting.';
+      return;
+    }
+
+    try {
+      const response = await fetch('http://127.0.0.1:8000/analyze', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ name, rating, text })
+      });
+      const result = await response.json();
+
+      if (!result.appropriate) {
+        formMsg.style.color = 'var(--danger)';
+        formMsg.textContent = result.message || 'This review was flagged as inappropriate or bot-generated.';
+        return;
+      }
+
+      formMsg.style.color = 'var(--success)';
+      formMsg.textContent = 'Review posted!';
+      setTimeout(() => (formMsg.textContent = ''), 1500);
+
+      const rev = result.review;
+      const div = document.createElement('div');
+      div.className = 'review';
+      div.innerHTML = `
+        <div class="meta-row">
+          <div class="name">${rev.name}</div>
+          <div class="stars">${'★'.repeat(rev.rating)}${'☆'.repeat(5 - rev.rating)}</div>
+        </div>
+        <p>${rev.text}</p>
+        <small style="color:#6b7280">Sentiment: ${rev.sentiment}</small>
+      `;
+      reviewsEl.prepend(div);
+      document.getElementById('review-form').reset();
+
+    } catch (error) {
+      console.error('Error sending review:', error);
+      formMsg.style.color = 'var(--danger)';
+      formMsg.textContent = 'Server error — could not send review.';
+    }
+  }
+  </script>
+
+</body>
+</html>
